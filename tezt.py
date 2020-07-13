@@ -38,10 +38,11 @@ class Render(object):
         self.windowHeight = 0
         self.viewPortWidth = 0
         self.viewPortHeight = 0
+        self.color = RED
         self.xPort = 0
         self.yPort = 0
         self.framebuffer = []
-
+    #Basicamente __init__ ^ hace esta funcion, asi que cree esta funcion por estética
     def glInit(self):
         return "Bitmap creado... \n"
 
@@ -65,7 +66,7 @@ class Render(object):
             for y in range(self.windowHeight)
         ]
 
-    def glClearColor(self, r, g, b):
+    def glClearColor(self, r=0, g=0, b=0):
         self.framebuffer = [
             [color(r,g,b) for x in range(self.windowWidth)]
             for y in range(self.windowHeight)
@@ -76,13 +77,11 @@ class Render(object):
         # https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glViewport.xhtml
         newX = round((x + 1)*(self.viewPortWidth/2)) + self.xPort
         newY = round((y + 1)*(self.viewPortHeight/2)) + self.yPort
-        print(range(len(self.framebuffer)))
-        print(newX)
-        print(newY)
-        self.framebuffer[newY][newX] = RED
+        self.framebuffer[newY][newX] = self.color
 
-    def glColor(self, r, g, b):
-        self.framebuffer[self.yPort][self.xPort] = color(r,g,b)
+    def glColor(self, r=0, g=0, b=0):
+        #self.framebuffer[self.yPort][self.xPort] = color(r,g,b)
+        self.color = color(r,g,b)
         
 
     def glFinish(self, filename):
@@ -118,8 +117,8 @@ class Render(object):
 
 
 
-def point(self, x, y):
-    self.framebuffer[y][x] = color(255, 0, 0)
+#def point(self, x, y):
+#   self.framebuffer[y][x] = color(255, 0, 0)
 
 #Colores como constantes
 GREEN = color(0, 255, 0)
@@ -132,19 +131,22 @@ WHITE = color(255, 255, 255)
 # 128, 64
 bitmap = Render()
 print(bitmap.glInit())
-bitmap.glCreateWindow(256,128)
-bitmap.glViewPort(0,0,64,32)
-bitmap.glVertex(5,5)
+bitmap.glCreateWindow(128,64)
+bitmap.glViewPort(10,10,64,32)
 bitmap.glClear()
+bitmap.glVertex(1,1)
+bitmap.glVertex(-1,-1)
+bitmap.glVertex(0,0)
 bitmap.glFinish('out.bmp')
 
-
-while opcion != 3:
-    opcion = int(input("============\n Escritor de imágenes BMP \n============ \n Eliga la opcion que desea: \n 1- Cambiar color de un punto \n 2- Cambiar color de la ventana \n 3 - Salir del progrma \n"))
-    if opcion == 1:
-        print("algo")
-    elif opcion == 2:
-        print("algo2")
+#Ya no hice el menu <_< 
+#No era necesarioa crearlo...
+#while opcion != 3:
+ #   opcion = int(input("============\n Escritor de imágenes BMP \n============ \n Eliga la opcion que desea: \n 1- Cambiar color de un punto \n 2- Cambiar color de la ventana \n 3 - Salir del progrma \n"))
+   # if opcion == 1:
+  #      print("algo")
+    #elif opcion == 2:
+     #   print("algo2")
 
 
 
