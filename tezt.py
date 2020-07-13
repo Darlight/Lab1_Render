@@ -15,7 +15,7 @@ Proposito: Un framebuffer simple para pintar un punto con modificaciones simples
 #struc pack
 # wikipedia bmp file format
 import struct
-opcion = 0
+#opcion = 0
 def char(c):
     # un char que vale un caracter de tipo string
     return struct.pack('=c', c.encode('ascii'))
