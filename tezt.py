@@ -31,28 +31,35 @@ def dword(c):
 def color(r, g, b):
     return bytes([b, g, r])
 
+#Colores como constantes
+GREEN = color(0, 255, 0)
+RED = color(255, 0, 0)
+BLUE = color(0, 0, 255)
+BLACK = color(0, 0, 0)
+WHITE = color(255, 255, 255) 
+
 class Render(object):
     def __init__(self):
         #Tamanio del bitmap
-        self.windowWidth = 0
-        self.windowHeight = 0
-        self.viewPortWidth = 0
-        self.viewPortHeight = 0
-        self.color = RED
+        self.framebuffer = []
+        self.color = WHITE
+        self.bg_color = BLACK
         self.xPort = 0
         self.yPort = 0
-        self.framebuffer = []
+        self.glCreateWindow()
+    
     #Basicamente __init__ ^ hace esta funcion, asi que cree esta funcion por estética
     def glInit(self):
         return "Bitmap creado... \n"
 
-    def glCreateWindow(self, width, height):
+    def point(self, x, y):
+        self.framebuffer[y][x] = self.color
+
+    def glCreateWindow(self, width=800, height=600):
         self.windowWidth = width
         self.windowHeight = height
-        self.framebuffer = [
-            [BLACK for x in range(self.windowWidth)]
-            for y in range(self.windowHeight)
-        ]
+        self.glClear()
+        self.glViewPort(self.xPort, self.yPort, width, height)
 
     def glViewPort(self, x, y, width, height):
         self.xPort = x
@@ -62,28 +69,68 @@ class Render(object):
 
     def glClear(self):
         self.framebuffer = [
-            [BLUE for x in range(self.windowWidth)]
-            for y in range(self.windowHeight)
+            [self.bg_color for x in range(self.windowWidth)] for y in range(self.windowHeight)
         ]
 
     def glClearColor(self, r=0, g=0, b=0):
-        self.framebuffer = [
-            [color(r,g,b) for x in range(self.windowWidth)]
-            for y in range(self.windowHeight)
-        ]
+        self.bg_color = color(r,g,b)
 
     def glVertex(self, x, y):
         #Formula sacada de:
         # https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glViewport.xhtml
-        newX = round((x + 1)*(self.viewPortWidth/2)) + self.xPort
-        newY = round((y + 1)*(self.viewPortHeight/2)) + self.yPort
-        self.framebuffer[newY][newX] = self.color
+        newX = round((x + 1)*(self.viewPortWidth/2) + self.xPort)
+        newY = round((y + 1)*(self.viewPortHeight/2) + self.yPort)
+        #funcion point para optimar
+        self.point(newX,newY)
 
     def glColor(self, r=0, g=0, b=0):
         #self.framebuffer[self.yPort][self.xPort] = color(r,g,b)
+        #Cambiar los valores de 0-255 a 0-1
         self.color = color(r,g,b)
-        
 
+    def glLine(self, placement, ycardinal = False):
+        #variables condicionales y misma formula del vertex
+        position = ((placement + 1) * (self.viewPortHeight/2) + self.yPort) if ycardinal else ((placement+1) * (self.viewPortWidth/2) + self.xPort)
+        return round(position)
+
+    def Line(self,x1,y1,x2,y2):
+        x1 = self.glLine(x1)
+        x2 = self.glLine(x2)
+        y1 = self.glLine(y1,True)
+        y2 = self.glLine(y2,True)
+    
+
+        steep = abs(y2 - y1) > abs(x2 - x1)
+
+        if steep:
+            x1, y1 = y1, x1
+            x2, y2 = y2, x2
+
+        if x1 > x2:
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+
+        dy = abs(y2 - y1)
+        dx = abs(x2 - x1)
+
+        offset = 0
+        threshold = dx
+
+        y = y1
+        for x in range(x1, x2):
+            if steep:
+                self.point(y, x)
+            else:
+                self.point(x, y)
+            
+            offset += dy*2
+
+            if offset >= threshold:
+                y += 1 if y1 < y2 else -1
+                threshold += dx*2
+    
+
+            
     def glFinish(self, filename):
         f = open(filename, 'bw')
         # file header
@@ -110,9 +157,11 @@ class Render(object):
         f.write(dword(0))
 
         # pixel data
-        for x in range(self.windowWidth):
-            for y in range(self.windowHeight):
-                f.write(self.framebuffer[y][x])
+
+        #ESTA COSA ERA MI ERROR, HABIA COLOCADO MAL LAS COORDENADAS 
+        for x in range(self.windowHeight):
+            for y in range(self.windowWidth):
+                f.write(self.framebuffer[x][y])
         f.close()
 
 
